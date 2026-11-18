@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bible Verse Projection</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background-color: #0b0f19;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      background-color: #111827;
+      border-bottom: 1px solid #1f2937;
+      padding: 16px 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .header-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #e2e8f0;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    input, select, button {
+      background-color: #1f2937;
+      border: 1px solid #374151;
+      color: #f9fafb;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 0.95rem;
+    }
+    input:focus, select:focus {
+      outline: 2px solid #3b82f6;
+      border-color: transparent;
+    }
+    button {
+      background-color: #2563eb;
+      border-color: #2563eb;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+    button:hover {
+      background-color: #1d4ed8;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .reference-label {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #60a5fa;
+      margin-bottom: 24px;
+    }
+    .projection-box {
+      max-width: 960px;
+      width: 100%;
+      background-color: #111827;
+      border: 1px solid #1f2937;
+      border-radius: 16px;
+      padding: 48px 40px;
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      line-height: 1.5;
+      color: #f8fafc;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-title">Scripture Projection Screen</div>
+    <div class="controls">
+      <input type="text" id="verseInput" value="MARK 11:12" placeholder="e.g. Mark 11:12" aria-label="Bible Reference" />
+      <select id="translationSelect" aria-label="Translation">
+        <option value="kjv" selected>KJV (King James Version)</option>
+        <option value="web">WEB (World English Bible)</option>
+        <option value="asv">ASV (American Standard Version)</option>
+        <option value="bbe">BBE (Bible in Basic English)</option>
+      </select>
+      <button type="button" id="loadBtn">Load Verse</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="reference-label" id="refDisplay">MARK 11:12</div>
+    <div class="projection-box" id="projectionBox">Ready for projection</div>
+  </main>
+
+  <script>
+    const verseInput = document.getElementById("verseInput");
+    const translationSelect = document.getElementById("translationSelect");
+    const loadBtn = document.getElementById("loadBtn");
+    const refDisplay = document.getElementById("refDisplay");
+    const projectionBox = document.getElementById("projectionBox");
+
+    function updateReference() {
+      const val = verseInput.value.trim();
+      if (val) {
+        refDisplay.innerText = val.toUpperCase();
+        projectionBox.innerText = "Ready for projection";
+      }
+    }
+
+    loadBtn.addEventListener("click", () => {
+      updateReference();
+      fixRealVerse();
+    });
+
+    verseInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        updateReference();
+        fixRealVerse();
+      }
+    });
+
+    translationSelect.addEventListener("change", () => {
+      updateReference();
+      fixRealVerse();
+    });
+  </script>
+
+  <script>
+    // === FIX FOR THIS EXACT SCREEN - Mark 11:12 ===
+    async function fixRealVerse(){
+      var all = document.body.innerText;
+      var m = all.match(/([1-3]?\s*[A-Za-z]+)\s+(\d+):(\d+(?:-\d+)?)/);
+      var book = "Mark", chap = 11, verse = "12";
+      if (m) {
+        book = m[1] ? m[1].trim() : "Mark";
+        chap = m[2] ? parseInt(m[2], 10) : 11;
+        verse = m[3] ? m[3] : "12";
+      }
+      var trans = document.getElementById("translationSelect") ? document.getElementById("translationSelect").value : "kjv";
+      var els = document.querySelectorAll("div, p, h1, h2, h3, span");
+      var target = null;
+      for (var i = 0; i < els.length; i++) {
+        if (els[i].id === "projectionBox" || (els[i].children.length === 0 && els[i].innerText && els[i].innerText.indexOf("Ready for projection") !== -1)) {
+          target = els[i];
+          break;
+        }
+      }
+      if (!target) return;
+      target.innerText = "Loading Real Bible... " + book + " " + chap + ":" + verse + "...";
+      try {
+        var r = await fetch("https://bible-api.com/" + encodeURIComponent(book + " " + chap + ":" + verse) + "?translation=" + encodeURIComponent(trans));
+        var j = await r.json();
+        if (j && j.text) {
+          target.innerText = "[" + trans.toUpperCase() + "] " + (j.reference || (book + " " + chap + ":" + verse)) + " - " + j.text.trim();
+        } else {
+          target.innerText = "Verse not found. Check the reference and try again.";
+        }
+      } catch (e) {
+        target.innerText = "No Internet - Turn ON Data and reload";
+      }
+    }
+    setTimeout(fixRealVerse, 1000);
+    setInterval(function(){
+      if (document.body.innerText.indexOf("Ready for projection") !== -1) fixRealVerse();
+    }, 3000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ALL 20 INSIDE - JSON BIBLE</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#050a1f;color:#fff;padding-bottom:30px}
+.top{background:linear-gradient(90deg,#ffcc00,#ff9900);padding:12px;text-align:center;border-radius:0 0 20px 20px}
+.top b{color:#0a1a5a;font-size:18px}
+.top span{display:block;color:#000;font-size:11px;font-weight:900}
+.card{margin:10px;background:#122a6b;border:2px solid #ffcc00;border-radius:20px;padding:16px;text-align:center}
+.verse{font-size:25px;line-height:1.5;margin:12px 0;min-height:80px}
+.ref{color:#ffcc00;font-weight:900}
+.btn{border:none;padding:13px;border-radius:30px;font-weight:900;cursor:pointer;margin-top:8px;width:100%;font-size:14px}
+.btn:active{transform:scale(0.98)}
+.grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:10px}
+.grid button{background:#1e3a8a;color:#fff;border:1px solid #ffcc00;padding:10px 2px;border-radius:10px;font-weight:900;cursor:pointer;font-size:12px}
+.grid button.active{background:#ffcc00;color:#000}
+.box{margin:10px;background:#071a4a;border:1px solid #ffcc00;border-radius:15px;padding:10px}
+.box input,.box select{width:100%;padding:11px;border-radius:10px;border:2px solid #ffcc00;margin-top:6px;background:#fff;color:#000;font-weight:bold}
+.list{height:120px;overflow:auto;line-height:2;margin-top:6px;border:1px solid rgba(255,204,0,0.3);border-radius:8px;padding:4px}
+.list span{display:block;padding:4px 8px;cursor:pointer;border-radius:6px}
+.list span:hover{background:#ffcc00;color:#000;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="top"><b>♥ ALL 20 INSIDE ♥</b><span>YOUR 20 VERSIONS • ALL INSIDE JSON • VOICE DECLARES</span></div>
+<div style="text-align:center;padding:10px"><h1 style="color:#ffcc00">📖 BIBLE PROJECTOR<br>ALL 20 INSIDE</h1><p>🔥 Faith comes by hearing — Romans 10:17</p></div>
+
+<div class="card">
+  <div style="color:#ffcc00;font-size:11px">● LIVE • <span id="clock"></span> • <span id="voiceState">VOICE ON 🔊</span></div>
+  <h2 id="title" style="font-size:28px;margin:10px 0">MARK 11:12 KJV</h2>
+  <div class="verse" id="verseText">Loading All 20 Inside...</div>
+  <div class="ref" id="verseRef">- Mark 11:12</div>
+  <div id="status" style="font-size:11px;margin-top:6px;color:#a5b4fc">Ready</div>
+  <div style="display:flex;gap:8px">
+    <button class="btn" style="background:#fff;color:#000" onclick="move(-1)">◀ PREV</button>
+    <button class="btn" style="background:#ffcc00;color:#000" onclick="move(1)">NEXT ▶</button>
+  </div>
+  <button class="btn" style="background:#ff00aa;color:#fff" onclick="declareVerse()">🔊 DECLARE THIS VERSE NOW</button>
+  <button class="btn" style="background:#22c55e;color:#fff" onclick="toggleDeclare()" id="declareBtn">🔊 AUTO-DECLARE: ON</button>
+  <button class="btn" style="background:#7c3aed;color:#fff" onclick="toggleMic()" id="micBtn">🎤 MIC OFF — SAY "John 3 verse 16" & IT WILL DECLARE</button>
+  <p id="voiceResult" style="font-size:12px;color:#ffcc00;margin-top:4px"></p>
+  <p id="listenStatus" style="font-size:12px;margin-top:2px">Mic OFF</p>
+  <input style="width:100%;padding:12px;border-radius:20px;border:2px solid #ffcc00;margin-top:8px;text-align:center;font-weight:bold" id="typeVerse" placeholder="TYPE: John 3 16" onkeydown="if(event.key==='Enter') typeShow()">
+  <button class="btn" style="background:#ffcc00;color:#000" onclick="typeShow()">✅ SHOW + DECLARE NOW</button>
+  <button class="btn" style="background:#2563eb;color:#fff" onclick="projectTV()">📺 PROJECT TO TV</button>
+</div>
+
+<div class="box">
+  <h3 style="text-align:center;color:#ffcc00">📚 BOOKS</h3>
+  <input id="bookSearch" placeholder="🔍 SEARCH BOOK..." oninput="filterBooks()">
+  <select id="bookSel" onchange="changeBook()"></select>
+  <div class="list" id="bookList"></div>
+  <div style="display:flex;gap:8px">
+    <input id="chapIn" type="number" min="1" value="11" placeholder="Chapter">
+    <input id="verseIn" type="number" min="1" value="12" placeholder="Verse">
+  </div>
+  <button class="btn" style="background:#22c55e;color:#fff" onclick="goVerse()">GO + DECLARE</button>
+</div>
+
+<div class="card">
+  <h3 style="color:#ffcc00">📖 YOUR 20 VERSIONS — ALL INSIDE!</h3>
+  <div class="grid" id="verGrid"></div>
+  <p style="font-size:11px;margin-top:8px" id="verNote">Tap any version — Text will change from INSIDE!</p>
+</div>
+
+<div style="text-align:center;font-size:11px;padding:10px">ALL 20 INSIDE • Donated by Samuel Quansah</div>
+
+<script>
+// ===== YOUR 20 VERSIONS - ALL INSIDE JSON =====
+var VERSIONS = [
+  "KJV","NKJV","NIV","ESV","NLT","AMP","MSG","NASB","CSB","RSV",
+  "ASV","WEB","YLT","DARBY","BBE","GNT","CEV","HCSB","NET","ERV"
+];
+
+var ALL_VERSIONS_JSON = {
+  "KJV": {
+    "Mark 11:12": "And on the morrow, when they were come from Bethany, he was hungry.",
+    "John 3:16": "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.",
+    "Hebrews 11:1": "Now faith is the substance of things hoped for, the evidence of things not seen.",
+    "Psalms 23:1": "The LORD is my shepherd; I shall not want.",
+    "Romans 10:17": "So then faith cometh by hearing, and hearing by the word of God.",
+    "Matthew 5:11": "Blessed are ye, when men shall revile you, and persecute you, and shall say all manner of evil against you falsely, for my sake.",
+    "Philippians 4:13": "I can do all things through Christ which strengtheneth me.",
+    "Genesis 1:1": "In the beginning God created the heaven and the earth.",
+    "Proverbs 3:5": "Trust in the LORD with all thine heart; and lean not unto thine own understanding.",
+    "Isaiah 41:10": "Fear thou not; for I am with thee: be not dismayed; for I am thy God: I will strengthen thee; yea, I will help thee; yea, I will uphold thee with the right hand of my righteousness.",
+    "Jeremiah 29:11": "For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end.",
+    "Romans 8:28": "And we know that all things work together for good to them that love God, to them who are the called according to his purpose."
+  },
+  "NKJV": {
+    "Mark 11:12": "Now the next day, when they had come out from Bethany, He was hungry.",
+    "John 3:16": "For God so loved the world that He gave His only begotten Son, that whoever believes in Him should not perish but have everlasting life.",
+    "Hebrews 11:1": "Now faith is the substance of things hoped for, the evidence of things not seen.",
+    "Psalms 23:1": "The LORD is my shepherd; I shall not want.",
+    "Romans 10:17": "So then faith comes by hearing, and hearing by the word of God.",
+    "Matthew 5:11": "Blessed are you when they revile and persecute you, and say all kinds of evil against you falsely for My sake.",
+    "Philippians 4:13": "I can do all things through Christ who strengthens me.",
+    "Genesis 1:1": "In the beginning God created the heavens and the earth."
+  },
+  "NIV": {
+    "Mark 11:12": "The next day as they were leaving Bethany, Jesus was hungry.",
+    "John 3:16": "For God so loved the world that he gave his one and only Son, that whoever believes in him shall not perish but have eternal life.",
+    "Hebrews 11:1": "Now faith is confidence in what we hope for and assurance about what we do not see.",
+    "Psalms 23:1": "The LORD is my shepherd, I lack nothing.",
+    "Romans 10:17": "Consequently, faith comes from hearing the message, and the message is heard through the word about Christ.",
+    "Matthew 5:11": "Blessed are you when people insult you, persecute you and falsely say all kinds of evil against you because of me.",
+    "Philippians 4:13": "I can do all this through him who gives me strength.",
+    "Genesis 1:1": "In the beginning God created the heavens and the earth."
+  },
+  "ESV": {
+    "Mark 11:12": "On the following day, when they came from Bethany, he was hungry.",
+    "John 3:16": "For God so loved the world, that he gave his only Son, that whoever believes in him should not perish but have eternal life.",
+    "Hebrews 11:1": "Now faith is the assurance of things hoped for, the conviction of things not seen.",
+    "Psalms 23:1": "The LORD is my shepherd; I shall not want.",
+    "Romans 10:17": "So faith comes from hearing, and hearing through the word of Christ.",
+    "Matthew 5:11": "Blessed are you when others revile you and persecute you and utter all kinds of evil against you falsely on my account.",
+    "Philippians 4:13": "I can do all things through him who strengthens me.",
+    "Genesis 1:1": "In the beginning, God created the heavens and the earth."
+  },
+  "NLT": {
+    "Mark 11:12": "The next morning as they were leaving Bethany, Jesus was hungry.",
+    "John 3:16": "For this is how God loved the world: He gave his one and only Son, so that everyone who believes in him will not perish but have eternal life.",
+    "Hebrews 11:1": "Faith shows the reality of what we hope for; it is the evidence of things we cannot see.",
+    "Psalms 23:1": "The LORD is my shepherd; I have all that I need.",
+    "Romans 10:17": "So faith comes from hearing, that is, hearing the Good News about Christ.",
+    "Matthew 5:11": "God blesses you when people mock you and persecute you and lie about you and say all sorts of evil things against you because you are my followers.",
+    "Philippians 4:13": "For I can do everything through Christ, who gives me strength.",
+    "Genesis 1:1": "In the beginning God created the heavens and the earth."
+  },
+  "AMP": {
+    "Mark 11:12": "On the next day, when they had left Bethany, He was hungry.",
+    "John 3:16": "For God so [greatly] loved and dearly prized the world, that He [even] gave His [One and] only begotten Son, so that whoever believes and trusts in Him [as Savior] shall not perish, but have eternal life.",
+    "Hebrews 11:1": "Now faith is the assurance (title deed, confirmation) of things hoped for (divinely guaranteed), and the evidence of things not seen [the conviction of their reality—faith comprehends as fact what cannot be experienced by the physical senses].",
+    "Psalms 23:1": "The LORD is my Shepherd [to feed, to guide and to shield me], I shall not want.",
+    "Romans 10:17": "So faith comes from hearing [what is told], and what is heard comes by the [preaching of the] message concerning Christ.",
+    "Philippians 4:13": "I can do all things [which He has called me to do] through Him who strengthens and empowers me [to fulfill His purpose—I am self-sufficient in Christ's sufficiency; I am ready for anything and equal to anything through Him who infuses me with inner strength and confident peace.]"
+  },
+  "MSG": {
+    "Mark 11:12": "As they left Bethany the next day, he was hungry.",
+    "John 3:16": "This is how much God loved the world: He gave his Son, his one and only Son. And this is why: so that no one need be destroyed; by believing in him, anyone can have a whole and lasting life.",
+    "Hebrews 11:1": "The fundamental fact of existence is that this trust in God, this faith, is the firm foundation under everything that makes life worth living. It's our handle on what we can't see.",
+    "Psalms 23:1": "GOD, my shepherd! I don't need a thing.",
+    "Romans 10:17": "The point is: Before you trust, you have to listen. But unless Christ's Word is preached, there's nothing to listen to.",
+    "Philippians 4:13": "Whatever I have, wherever I am, I can make it through anything in the One who makes me who I am."
+  },
+  "NASB": {
+    "Mark 11:12": "On the next day, when they had left Bethany, He became hungry.",
+    "John 3:16": "For God so loved the world, that He gave His only Son, so that everyone who believes in Him will not perish, but have eternal life.",
+    "Hebrews 11:1": "Now faith is the certainty of things hoped for, a proof of things not seen.",
+    "Psalms 23:1": "The LORD is my shepherd, I will not be in need.",
+    "Romans 10:17": "So faith comes from hearing, and hearing by the word of Christ.",
+    "Philippians 4:13": "I can do all things through Him who strengthens me."
+  },
+  "CSB": {
+    "Mark 11:12": "The next day when they went out from Bethany, he was hungry.",
+    "John 3:16": "For God loved the world in this way: He gave his one and only Son, so that everyone who believes in him will not perish but have eternal life.",
+    "Hebrews 11:1": "Now faith is the reality of what is hoped for, the proof of what is not seen.",
+    "Psalms 23:1": "The LORD is my shepherd; I have what I need.",
+    "Romans 10:17": "So faith comes from what is heard, and what is heard comes through the message about Christ.",
+    "Philippians 4:13": "I am able to do all things through him who strengthens me."
+  },
+  "RSV": {
+    "Mark 11:12": "On the following day, when they came from Bethany, he was hungry.",
+    "John 3:16": "For God so loved the world that he gave his only Son, that whoever believes in him should not perish but have eternal life.",
+    "Hebrews 11:1": "Now faith is the assurance of things hoped for, the conviction of things not seen.",
+    "Psalms 23:1": "The LORD is my shepherd, I shall not want;",
+    "Romans 10:17": "So faith comes from what is heard, and what is heard comes by the preaching of Christ.",
+    "Philippians 4:13": "I can do all things in him who strengthens me."
+  },
+  "ASV": {
+    "Mark 11:12": "And on the morrow, when they were come out from Bethany, he hungered.",
+    "John 3:16": "For God so loved the world, that he gave his only begotten Son, that whosoever believeth on him should not perish, but have eternal life.",
+    "Hebrews 11:1": "Now faith is assurance of things hoped for, a conviction of things not seen.",
+    "Psalms 23:1": "Jehovah is my shepherd; I shall not want.",
+    "Romans 10:17": "So belief cometh of hearing, and hearing by the word of Christ.",
+    "Philippians 4:13": "I can do all things in him that strengtheneth me."
+  },
+  "WEB": {
+    "Mark 11:12": "The next day, when they had come out from Bethany, he was hungry.",
+    "John 3:16": "For God so loved the world, that he gave his one and only Son, that whoever believes in him should not perish, but have eternal life.",
+    "Hebrews 11:1": "Now faith is assurance of things hoped for, proof of things not seen.",
+    "Psalms 23:1": "Yahweh is my shepherd: I shall lack nothing.",
+    "Romans 10:17": "So faith comes by hearing, and hearing by the word of God.",
+    "Philippians 4:13": "I can do all things through Christ, who strengthens me."
+  },
+  "YLT": {
+    "Mark 11:12": "And on the morrow, they having come forth from Bethany, he hungered,",
+    "John 3:16": "for God did so love the world, that His Son — the only begotten — He gave, that every one who is believing in him may not perish, but may have life age-during.",
+    "Hebrews 11:1": "And faith is of things hoped for a confidence, of matters not seen a conviction,",
+    "Psalms 23:1": "Jehovah is my shepherd, I do not lack,",
+    "Romans 10:17": "so then the faith is by a report, and the report through a saying of God,",
+    "Philippians 4:13": "For all things I have strength, in Christ's strengthening me;"
+  },
+  "DARBY": {
+    "Mark 11:12": "And on the morrow, when they were gone out of Bethany, he hungered.",
+    "John 3:16": "For God so loved the world, that he gave his only-begotten Son, that whosoever believes on him may not perish, but have life eternal.",
+    "Hebrews 11:1": "Now faith is the substantiating of things hoped for, the conviction of things not seen.",
+    "Psalms 23:1": "Jehovah is my shepherd; I shall not want.",
+    "Romans 10:17": "So faith then is by a report, but the report by God's word.",
+    "Philippians 4:13": "I have strength for all things in him that gives me power."
+  },
+  "BBE": {
+    "Mark 11:12": "And on the day after, when they had come out from Bethany, he was in need of food.",
+    "John 3:16": "For God had such love for the world that he gave his only Son, so that whoever has faith in him may not come to destruction but have eternal life.",
+    "Hebrews 11:1": "Now faith is the substance of things hoped for, and the sign that the things not seen are true.",
+    "Psalms 23:1": "The Lord takes care of me as his sheep; I will not be without any good thing.",
+    "Romans 10:17": "So faith comes by hearing, and hearing by the word of Christ.",
+    "Philippians 4:13": "I am able to do all things through him who gives me strength."
+  },
+  "GNT": {
+    "Mark 11:12": "The next day, as they were coming back from Bethany, Jesus was hungry.",
+    "John 3:16": "For God loved the world so much that he gave his only Son, so that everyone who believes in him may not die but have eternal life.",
+    "Hebrews 11:1": "To have faith is to be sure of the things we hope for, to be certain of the things we cannot see.",
+    "Psalms 23:1": "The LORD is my shepherd; I have everything I need.",
+    "Romans 10:17": "So then, faith comes from hearing the message, and the message comes through preaching Christ.",
+    "Philippians 4:13": "I have the strength to face all conditions by the power that Christ gives me."
+  },
+  "CEV": {
+    "Mark 11:12": "The next morning, Jesus and his disciples left Bethany. Jesus was hungry,",
+    "John 3:16": "God loved the world so much that he gave his only Son, so that everyone who has faith in him will not die but have eternal life.",
+    "Hebrews 11:1": "Faith makes us sure of what we hope for and gives us proof of what we cannot see.",
+    "Psalms 23:1": "You, LORD, are my shepherd. I will never be in need.",
+    "Romans 10:17": "No one can have faith without hearing the message about Christ.",
+    "Philippians 4:13": "Christ gives me the strength to face anything."
+  },
+  "HCSB": {
+    "Mark 11:12": "The next day when they came out from Bethany, He was hungry.",
+    "John 3:16": "For God loved the world in this way: He gave His One and Only Son, so that everyone who believes in Him will not perish but have eternal life.",
+    "Hebrews 11:1": "Now faith is the reality of what is hoped for, the proof of what is not seen.",
+    "Psalms 23:1": "The LORD is my shepherd; there is nothing I lack.",
+    "Romans 10:17": "So faith comes from what is heard, and what is heard comes through the message about Christ.",
+    "Philippians 4:13": "I am able to do all things through Him who strengthens me."
+  },
+  "NET": {
+    "Mark 11:12": "Now the next day, as they went out from Bethany, he was hungry.",
+    "John 3:16": "For this is the way God loved the world: He gave his one and only Son, so that everyone who believes in him will not perish but have eternal life.",
+    "Hebrews 11:1": "Now faith is being sure of what we hope for, being convinced of what we do not see.",
+    "Psalms 23:1": "The LORD is my shepherd, I lack nothing.",
+    "Romans 10:17": "Consequently faith comes from what is heard, and what is heard comes through the preached word of Christ.",
+    "Philippians 4:13": "I am able to do all things through the one who strengthens me."
+  },
+  "ERV": {
+    "Mark 11:12": "The next day, as Jesus and his followers were leaving Bethany, Jesus was hungry.",
+    "John 3:16": "Yes, God loved the world so much that he gave his only Son, so that everyone who believes in him would not be lost but have eternal life.",
+    "Hebrews 11:1": "Faith is being sure of the things we hope for. It is being sure of things we cannot see.",
+    "Psalms 23:1": "The LORD is my shepherd. I will always have everything I need.",
+    "Romans 10:17": "So faith comes from hearing the Good News. And people hear the Good News when someone tells them about Christ.",
+    "Philippians 4:13": "Christ is the one who gives me the strength I need to do whatever I must do."
+  }
+};
+
+var BOOKS = [
+  "Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth",
+  "1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther",
+  "Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations",
+  "Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk","Zephaniah","Haggai","Zechariah","Malachi",
+  "Matthew","Mark","Luke","John","Acts","Romans","1 Corinthians","2 Corinthians","Galatians","Ephesians",
+  "Philippians","Colossians","1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon",
+  "Hebrews","James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"
+];
+
+var currentVersion = "KJV";
+var currentBook = "Mark";
+var currentChap = 11;
+var currentVerse = 12;
+var autoDeclare = true;
+var tvWindow = null;
+var recognition = null;
+var micActive = false;
+
+function updateClock() {
+  var now = new Date();
+  document.getElementById("clock").textContent = now.toLocaleTimeString();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function initVersions() {
+  var grid = document.getElementById("verGrid");
+  grid.innerHTML = "";
+  VERSIONS.forEach(function(ver) {
+    var btn = document.createElement("button");
+    btn.textContent = ver;
+    btn.id = "ver_" + ver;
+    if (ver === currentVersion) btn.className = "active";
+    btn.onclick = function() { selectVersion(ver); };
+    grid.appendChild(btn);
+  });
+}
+
+function selectVersion(ver) {
+  currentVersion = ver;
+  document.querySelectorAll("#verGrid button").forEach(function(b) {
+    b.classList.remove("active");
+  });
+  var activeBtn = document.getElementById("ver_" + ver);
+  if (activeBtn) activeBtn.classList.add("active");
+  document.getElementById("verNote").textContent = "Active Version: " + ver + " (Loaded from INSIDE JSON)";
+  renderVerse(autoDeclare);
+}
+
+function initBooks() {
+  var sel = document.getElementById("bookSel");
+  sel.innerHTML = "";
+  BOOKS.forEach(function(b) {
+    var opt = document.createElement("option");
+    opt.value = b;
+    opt.textContent = b;
+    if (b === currentBook) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  renderBookList(BOOKS);
+}
+
+function renderBookList(list) {
+  var container = document.getElementById("bookList");
+  container.innerHTML = "";
+  list.forEach(function(b) {
+    var span = document.createElement("span");
+    span.textContent = b;
+    span.onclick = function() {
+      currentBook = b;
+      document.getElementById("bookSel").value = b;
+      currentChap = 1;
+      currentVerse = 1;
+      document.getElementById("chapIn").value = 1;
+      document.getElementById("verseIn").value = 1;
+      renderVerse(autoDeclare);
+    };
+    container.appendChild(span);
+  });
+}
+
+function filterBooks() {
+  var q = document.getElementById("bookSearch").value.toLowerCase();
+  var filtered = BOOKS.filter(function(b) { return b.toLowerCase().includes(q); });
+  renderBookList(filtered);
+}
+
+function changeBook() {
+  currentBook = document.getElementById("bookSel").value;
+  renderVerse(autoDeclare);
+}
+
+function getVerseText(ver, ref) {
+  if (ALL_VERSIONS_JSON[ver] && ALL_VERSIONS_JSON[ver][ref]) {
+    return ALL_VERSIONS_JSON[ver][ref];
+  }
+  if (ALL_VERSIONS_JSON["KJV"] && ALL_VERSIONS_JSON["KJV"][ref]) {
+    return "[KJV Fallback] " + ALL_VERSIONS_JSON["KJV"][ref];
+  }
+  return "Verse '" + ref + "' not yet added to offline JSON for " + ver + ". Try Mark 11:12, John 3:16, Hebrews 11:1, Psalms 23:1, Romans 10:17, or Philippians 4:13.";
+}
+
+function renderVerse(shouldSpeak) {
+  var ref = currentBook + " " + currentChap + ":" + currentVerse;
+  var text = getVerseText(currentVersion, ref);
+  document.getElementById("title").textContent = (ref + " " + currentVersion).toUpperCase();
+  document.getElementById("verseText").textContent = text;
+  document.getElementById("verseRef").textContent = "- " + ref + " (" + currentVersion + ")";
+  document.getElementById("status").textContent = "Showing " + ref + " in " + currentVersion;
+  document.getElementById("chapIn").value = currentChap;
+  document.getElementById("verseIn").value = currentVerse;
+
+  updateTV();
+  if (shouldSpeak) {
+    declareVerse();
+  }
+}
+
+function move(step) {
+  currentVerse = Math.max(1, parseInt(currentVerse, 10) + step);
+  renderVerse(autoDeclare);
+}
+
+function goVerse() {
+  currentBook = document.getElementById("bookSel").value;
+  currentChap = Math.max(1, parseInt(document.getElementById("chapIn").value, 10) || 1);
+  currentVerse = Math.max(1, parseInt(document.getElementById("verseIn").value, 10) || 1);
+  renderVerse(true);
+}
+
+function parseReference(input) {
+  var clean = input.trim().replace(/verse/gi, " ").replace(/chapter/gi, " ").replace(/[:.,-]+/g, " ").replace(/\s+/g, " ");
+  var match = clean.match(/^([1-3]?\s*[a-zA-Z]+(?:\s+[a-zA-Z]+)*)\s+(\d+)\s+(\d+)$/i);
+  if (!match) return null;
+  var rawBook = match[1].toLowerCase().trim();
+  var foundBook = BOOKS.find(function(b) { return b.toLowerCase() === rawBook || b.toLowerCase().startsWith(rawBook); });
+  if (!foundBook) return null;
+  return {
+    book: foundBook,
+    chap: parseInt(match[2], 10),
+    verse: parseInt(match[3], 10)
+  };
+}
+
+function typeShow() {
+  var val = document.getElementById("typeVerse").value;
+  var parsed = parseReference(val);
+  if (parsed) {
+    currentBook = parsed.book;
+    currentChap = parsed.chap;
+    currentVerse = parsed.verse;
+    document.getElementById("bookSel").value = currentBook;
+    renderVerse(true);
+  } else {
+    document.getElementById("status").textContent = "Format not recognized. Try: John 3 16";
+  }
+}
+
+function declareVerse() {
+  if (!("speechSynthesis" in window)) {
+    document.getElementById("status").textContent = "Text-to-Speech not supported in this browser.";
+    return;
+  }
+  window.speechSynthesis.cancel();
+  var ref = currentBook + " chapter " + currentChap + " verse " + currentVerse;
+  var text = document.getElementById("verseText").textContent;
+  var utter = new SpeechSynthesisUtterance(ref + ". " + text);
+  utter.rate = 0.95;
+  window.speechSynthesis.speak(utter);
+}
+
+function toggleDeclare() {
+  autoDeclare = !autoDeclare;
+  var btn = document.getElementById("declareBtn");
+  var state = document.getElementById("voiceState");
+  if (autoDeclare) {
+    btn.textContent = "🔊 AUTO-DECLARE: ON";
+    btn.style.background = "#22c55e";
+    state.textContent = "VOICE ON 🔊";
+  } else {
+    btn.textContent = "🔇 AUTO-DECLARE: OFF";
+    btn.style.background = "#64748b";
+    state.textContent = "VOICE OFF 🔇";
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  }
+}
+
+function toggleMic() {
+  var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    document.getElementById("listenStatus").textContent = "Voice recognition not supported in this browser.";
+    return;
+  }
+  if (!recognition) {
+    recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+    recognition.onresult = function(event) {
+      var transcript = event.results[event.results.length - 1][0].transcript;
+      document.getElementById("voiceResult").textContent = 'Heard: "' + transcript + '"';
+      var parsed = parseReference(transcript);
+      if (parsed) {
+        currentBook = parsed.book;
+        currentChap = parsed.chap;
+        currentVerse = parsed.verse;
+        document.getElementById("bookSel").value = currentBook;
+        renderVerse(true);
+      }
+    };
+    recognition.onerror = function(e) {
+      document.getElementById("listenStatus").textContent = "Mic Error: " + e.error;
+    };
+    recognition.onend = function() {
+      if (micActive) recognition.start();
+    };
+  }
+
+  micActive = !micActive;
+  var btn = document.getElementById("micBtn");
+  if (micActive) {
+    recognition.start();
+    btn.style.background = "#dc2626";
+    btn.textContent = "🛑 MIC LISTENING — TAP TO STOP";
+    document.getElementById("listenStatus").textContent = "Listening for scripture...";
+  } else {
+    recognition.stop();
+    btn.style.background = "#7c3aed";
+    btn.textContent = '🎤 MIC OFF — SAY "John 3 verse 16" & IT WILL DECLARE';
+    document.getElementById("listenStatus").textContent = "Mic OFF";
+  }
+}
+
+function projectTV() {
+  if (!tvWindow || tvWindow.closed) {
+    tvWindow = window.open("", "BibleProjectorTV", "width=1024,height=768");
+  }
+  updateTV();
+  if (tvWindow) tvWindow.focus();
+}
+
+function updateTV() {
+  if (!tvWindow || tvWindow.closed) return;
+  var title = document.getElementById("title").textContent;
+  var text = document.getElementById("verseText").textContent;
+  var ref = document.getElementById("verseRef").textContent;
+  tvWindow.document.open();
+  tvWindow.document.write(
+    "<!DOCTYPE html><html><head><title>TV Projector - " + title + "</title>" +
+    "<style>body{margin:0;background:#050a1f;color:#fff;font-family:Arial,sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;text-align:center;padding:40px;box-sizing:border-box}" +
+    "h1{color:#ffcc00;font-size:48px;margin-bottom:24px}" +
+    "p{font-size:42px;line-height:1.45;max-width:90%;margin:0 0 30px}" +
+    "span{color:#ffcc00;font-size:32px;font-weight:bold}</style></head>" +
+    "<body><h1>" + title + "</h1><p>" + text + "</p><span>" + ref + "</span></body></html>"
+  );
+  tvWindow.document.close();
+}
+
+initVersions();
+initBooks();
+renderVerse(false);
+</script>
+</body>
+</html>

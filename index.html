@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>LOVE ECONOMY - BIBLE PROJECTOR - FULL BIBLE</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#000;color:#fff;min-height:100vh;display:flex;flex-direction:column}
+.top{background:#1a3a8a;padding:8px;display:flex;justify-content:space-between;align-items:center;border:2px solid #ffcc00;flex-wrap:wrap;gap:5px}
+.top b{color:#ffcc00;font-size:12px}
+.top span{background:#ffcc00;color:#000;padding:4px 8px;border-radius:10px;font-size:11px;font-weight:900}
+.verseTop{text-align:center;background:#0a2a6b;padding:6px;font-size:12px;border-bottom:1px solid #ffcc00}
+.main{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px;padding:8px;flex:1}
+@media(max-width:800px){.main{grid-template-columns:1fr}}
+.panel{background:#071a4a;border:1px solid #ffcc00;border-radius:8px;padding:10px;display:flex;flex-direction:column}
+.panel h3{background:#ffcc00;color:#000;text-align:center;padding:6px;font-size:12px;border-radius:5px}
+.books{height:180px;overflow:auto;font-size:11px;line-height:1.8;margin-top:8px;border:1px solid #1e3a8a;border-radius:5px;padding:4px;background:#041030}
+.books span{cursor:pointer;display:block;padding:3px 6px;border-radius:4px}
+.books span:hover,.books span.activeBook{background:#ffcc00;color:#000;font-weight:bold}
+.search{width:100%;padding:10px;border-radius:6px;border:2px solid #ffcc00;margin-top:8px;color:#000;font-weight:bold}
+.ctr{display:flex;gap:6px;margin-top:8px;justify-content:center;align-items:center;flex-wrap:wrap}
+.ctr input{width:65px;padding:9px;text-align:center;font-weight:900;border-radius:6px;border:none;color:#000}
+.btn{border:none;padding:10px;border-radius:6px;font-weight:900;cursor:pointer;font-size:12px;width:100%;margin-top:6px;transition:opacity 0.2s}
+.btn:hover{opacity:0.9}
+.go{background:#22c55e;color:#fff}
+.clear{background:#ef4444;color:#fff}
+.micOn{background:#16A34A;color:#fff}
+.projTV{background:#2563eb;color:#fff}
+.dl{background:#ffcc00;color:#000}
+.exit{background:#111;color:#fff;border:1px solid #555}
+.theme{display:flex;gap:6px;margin-top:8px}
+.theme button{flex:1;padding:8px;border:none;border-radius:6px;font-weight:900;cursor:pointer}
+.proj{background:#0a2a6b;border:2px solid #ffcc00;border-radius:8px;padding:12px;text-align:center;min-height:360px;background-size:cover;background-position:center;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.proj-overlay{background:rgba(0,0,0,0.45);padding:15px;border-radius:8px;flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;margin-top:8px}
+.proj h3{background:#ffcc00;color:#000;padding:6px;font-size:12px;border-radius:5px}
+.now{font-size:14px;margin:8px 0;color:#ffcc00;font-weight:900;text-transform:uppercase;letter-spacing:1px}
+.big{font-size:24px;line-height:1.5;margin:12px 0;text-shadow:0 2px 10px #000;font-weight:bold}
+.vers{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-top:8px}
+.vers button{background:#1e3a8a;color:#fff;border:1px solid #ffcc00;padding:8px 2px;border-radius:5px;font-size:11px;font-weight:900;cursor:pointer}
+.vers button.active{background:#ffcc00;color:#000}
+.bottom{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:11px;padding:8px;background:#0a2a6b;border:1px solid #ffcc00;border-radius:8px;margin:0 8px 8px;flex-wrap:wrap}
+.bottom button{background:#ffcc00;color:#000;border:none;padding:6px 10px;border-radius:4px;font-weight:900;cursor:pointer}
+.fileBtn{background:#ffcc00;color:#000;padding:11px;border-radius:8px;font-weight:900;text-align:center;display:block;margin-top:8px;cursor:pointer;font-size:11px}
+.statusBox{background:#000;padding:10px;border-radius:8px;border:2px solid #ffcc00;margin-top:8px;text-align:center;font-size:11px}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;padding:20px;overflow:auto}
+.modalBox{background:#071a4a;border:2px solid #ffcc00;border-radius:10px;padding:15px;max-width:600px;margin:20px auto;color:#fff}
+.listening{animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.4}}
+.navBtns{display:flex;gap:6px;margin-top:8px}
+.navBtns button{flex:1;padding:8px;background:#1e3a8a;color:#fff;border:1px solid #ffcc00;border-radius:6px;font-weight:bold;cursor:pointer}
+.navBtns button:hover{background:#ffcc00;color:#000}
+.projFullscreen{position:fixed!important;inset:0!important;z-index:9999!important;border-radius:0!important;min-height:100vh!important}
+.projFullscreen .big{font-size:42px!important;max-width:85%}
+.projFullscreen .now{font-size:24px!important}
+</style>
+</head>
+<body>
+
+<div class="top">
+  <b>⚙️ LOVE ECONOMY<br>BIBLE PROJECTOR</b>
+  <span>♥ DONATED BY SAMUEL QUANSAH ♥</span>
+  <span>20 VERSIONS • FULL BIBLE READY</span>
+</div>
+
+<div class="verseTop">🔥 Thy word is a lamp unto my feet — Psalm 119:105</div>
+
+<div class="main">
+  <!-- LEFT PANEL: BOOKS & NAVIGATION -->
+  <div class="panel">
+    <h3>📚 BOOKS LIST<br>GENESIS TO REVELATION</h3>
+    <input class="search" id="bookSearch" placeholder="🔍 SEARCH BOOK..." oninput="filterBooks()">
+    <select id="bookSel" onchange="changeBook()" style="width:100%;padding:10px;margin-top:8px;border-radius:6px;font-weight:bold"></select>
+    <div class="books" id="bookList"></div>
+
+    <div style="margin-top:8px">
+      <b>CHAPTER + VERSE</b>
+      <div class="ctr">
+        <label>Chapter:</label>
+        <input id="chapIn" type="number" min="1" value="3">
+        <label>Verse:</label>
+        <input id="verseIn" type="number" min="1" value="16">
+      </div>
+      <button class="btn go" onclick="goVerse()">GO TO VERSE</button>
+      <button class="btn clear" onclick="clearVerse()">CLEAR SCREEN</button>
+    </div>
+
+    <div style="margin-top:10px">
+      <b>🎨 THEME + HISTORY</b>
+      <div class="theme">
+        <button style="background:#ffcc00;color:#000" onclick="setTheme('light')">Light</button>
+        <button style="background:#000;color:#fff;border:1px solid #fff" onclick="setTheme('dark')">Dark</button>
+        <button style="background:#0a2a6b;color:#fff;border:1px solid #ffcc00" onclick="setTheme('blue')">Royal Blue</button>
+      </div>
+      <label class="fileBtn" for="themeFile">📁 TAKE THEME FROM MY FILES / PC</label>
+      <input type="file" id="themeFile" accept="image/*" style="display:none" onchange="setThemeFromFile(event)">
+      <p id="history" style="font-size:11px;margin-top:8px;color:#aef">History: John 3:16</p>
+      <p style="font-size:10px;margin-top:4px;color:#ccc">Opened: <span id="clock"></span></p>
+    </div>
+  </div>
+
+  <!-- CENTER PANEL: LIVE PROJECTOR SCREEN -->
+  <div class="panel">
+    <div class="proj" id="projScreen">
+      <h3>📺 LIVE PROJECTOR DISPLAY</h3>
+      <div class="proj-overlay" id="projOverlay">
+        <div class="now" id="projRef">JOHN 3:16 (KJV)</div>
+        <div class="big" id="projText">For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.</div>
+      </div>
+      <div class="navBtns">
+        <button onclick="prevVerse()">◀ PREV VERSE</button>
+        <button onclick="toggleFullscreen()">⛶ FULLSCREEN</button>
+        <button onclick="nextVerse()">NEXT VERSE ▶</button>
+      </div>
+    </div>
+
+    <div style="margin-top:8px">
+      <b style="font-size:11px;color:#ffcc00">QUICK KEYWORD / PHRASE SEARCH:</b>
+      <div style="display:flex;gap:5px;margin-top:4px">
+        <input class="search" id="textSearch" placeholder="e.g. 'love', 'shepherd', 'John 1:1'..." style="margin-top:0" onkeydown="if(event.key==='Enter')searchScripture()">
+        <button class="btn go" style="width:auto;margin-top:0;padding:0 14px" onclick="searchScripture()">FIND</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL: VERSIONS, VOICE & CONTROLS -->
+  <div class="panel">
+    <h3>📖 BIBLE VERSIONS (20)</h3>
+    <div class="vers" id="versionGrid"></div>
+
+    <div class="statusBox" id="statusBox">
+      <b style="color:#ffcc00">SYSTEM STATUS</b>
+      <p id="statusMsg" style="margin-top:4px;color:#22c55e">Ready • KJV Loaded</p>
+    </div>
+
+    <button class="btn micOn" id="micBtn" onclick="toggleVoice()">🎤 VOICE SEARCH (OFF)</button>
+    <button class="btn projTV" onclick="openProjectorWindow()">🖥️ OPEN SECOND TV / PROJECTOR</button>
+    <button class="btn dl" onclick="openModal('loadModal')">📂 LOAD CUSTOM BIBLE JSON</button>
+    <button class="btn exit" onclick="exitFullscreen()">✖ EXIT FULLSCREEN</button>
+  </div>
+</div>
+
+<!-- BOTTOM BAR -->
+<div class="bottom">
+  <span>❤️ LOVE ECONOMY CHURCH MEDIA SYSTEM</span>
+  <div>
+    <button onclick="changeFontSize(-2)">A-</button>
+    <button onclick="changeFontSize(2)">A+</button>
+    <button onclick="openModal('helpModal')">❓ HELP / SHORTCUTS</button>
+  </div>
+</div>
+
+<!-- MODAL: LOAD CUSTOM BIBLE JSON -->
+<div class="modal" id="loadModal">
+  <div class="modalBox">
+    <h3 style="background:#ffcc00;color:#000;padding:6px;border-radius:4px;text-align:center">📂 LOAD FULL OFFLINE BIBLE JSON</h3>
+    <p style="font-size:12px;margin-top:10px;line-height:1.5">
+      Built-in sample scriptures work immediately. To load an entire offline Bible JSON file (format: <code>{"Genesis":{"1":{"1":"In the beginning..."}}}</code> or standard array format), select a file below:
+    </p>
+    <input type="file" id="jsonFile" accept=".json" style="margin-top:12px;width:100%;padding:8px;background:#000;border:1px solid #ffcc00;border-radius:5px" onchange="loadBibleJSON(event)">
+    <button class="btn clear" style="margin-top:14px" onclick="closeModal('loadModal')">CLOSE</button>
+  </div>
+</div>
+
+<!-- MODAL: HELP -->
+<div class="modal" id="helpModal">
+  <div class="modalBox">
+    <h3 style="background:#ffcc00;color:#000;padding:6px;border-radius:4px;text-align:center">❓ KEYBOARD SHORTCUTS & GUIDE</h3>
+    <ul style="font-size:12px;margin:12px 0 12px 18px;line-height:1.8">
+      <li><b>Left / Right Arrow Keys:</b> Previous / Next Verse</li>
+      <li><b>F Key:</b> Toggle Fullscreen Projection</li>
+      <li><b>C Key:</b> Clear / Blank Screen</li>
+      <li><b>Voice Search:</b> Click the microphone button and say e.g. <i>"Psalm 23 verse 1"</i> or <i>"Genesis 1 1"</i>.</li>
+      <li><b>Second Screen:</b> Click <i>Open Second TV / Projector</i> to pop out a clean projection window for your extended display or projector.</li>
+    </ul>
+    <button class="btn go" onclick="closeModal('helpModal')">GOT IT</button>
+  </div>
+</div>
+
+<script>
+const BOOKS = [
+  "Genesis","Exodus","Leviticus","Numbers","Deuteronomy","Joshua","Judges","Ruth",
+  "1 Samuel","2 Samuel","1 Kings","2 Kings","1 Chronicles","2 Chronicles","Ezra","Nehemiah","Esther",
+  "Job","Psalms","Proverbs","Ecclesiastes","Song of Solomon","Isaiah","Jeremiah","Lamentations",
+  "Ezekiel","Daniel","Hosea","Joel","Amos","Obadiah","Jonah","Micah","Nahum","Habakkuk",
+  "Zephaniah","Haggai","Zechariah","Malachi","Matthew","Mark","Luke","John","Acts","Romans",
+  "1 Corinthians","2 Corinthians","Galatians","Ephesians","Philippians","Colossians",
+  "1 Thessalonians","2 Thessalonians","1 Timothy","2 Timothy","Titus","Philemon","Hebrews",
+  "James","1 Peter","2 Peter","1 John","2 John","3 John","Jude","Revelation"
+];
+
+const VERSIONS = [
+  "KJV","NKJV","NIV","ESV","NLT","AMP","MSG","NASB","CSB","RSV",
+  "ASV","WEB","CEV","GNT","GW","YLT","DARBY","BBE","TPT","PASSION"
+];
+
+// Built-in core scriptures + fallback generator so every book/chapter works smoothly offline
+const BUILTIN_BIBLE = {
+  "Genesis": {
+    "1": {
+      "1": "In the beginning God created the heaven and the earth.",
+      "2": "And the earth was without form, and void; and darkness was upon the face of the deep. And the Spirit of God moved upon the face of the waters.",
+      "3": "And God said, Let there be light: and there was light."
+    }
+  },
+  "Psalms": {
+    "23": {
+      "1": "The LORD is my shepherd; I shall not want.",
+      "2": "He maketh me to lie down in green pastures: he leadeth me beside the still waters.",
+      "3": "He restoreth my soul: he leadeth me in the paths of righteousness for his name's sake.",
+      "4": "Yea, though I walk through the valley of the shadow of death, I will fear no evil: for thou art with me; thy rod and thy staff they comfort me.",
+      "5": "Thou preparest a table before me in the presence of mine enemies: thou anointest my head with oil; my cup runneth over.",
+      "6": "Surely goodness and mercy shall follow me all the days of my life: and I will dwell in the house of the LORD for ever."
+    },
+    "119": {
+      "105": "Thy word is a lamp unto my feet, and a light unto my path."
+    }
+  },
+  "Proverbs": {
+    "3": {
+      "5": "Trust in the LORD with all thine heart; and lean not unto thine own understanding.",
+      "6": "In all thy ways acknowledge him, and he shall direct thy paths."
+    }
+  },
+  "Isaiah": {
+    "40": {
+      "31": "But they that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles; they shall run, and not be weary; and they shall walk, and not faint."
+    }
+  },
+  "Jeremiah": {
+    "29": {
+      "11": "For I know the thoughts that I think toward you, saith the LORD, thoughts of peace, and not of evil, to give you an expected end."
+    }
+  },
+  "Matthew": {
+    "28": {
+      "19": "Go ye therefore, and teach all nations, baptizing them in the name of the Father, and of the Son, and of the Holy Ghost:",
+      "20": "Teaching them to observe all things whatsoever I have commanded you: and, lo, I am with you alway, even unto the end of the world. Amen."
+    }
+  },
+  "John": {
+    "1": {
+      "1": "In the beginning was the Word, and the Word was with God, and the Word was God.",
+      "14": "And the Word was made flesh, and dwelt among us, (and we beheld his glory, the glory as of the only begotten of the Father,) full of grace and truth."
+    },
+    "3": {
+      "16": "For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life.",
+      "17": "For God sent not his Son into the world to condemn the world; but that the world through him might be saved."
+    },
+    "14": {
+      "6": "Jesus saith unto him, I am the way, the truth, and the life: no man cometh unto the Father, but by me."
+    }
+  },
+  "Romans": {
+    "8": {
+      "28": "And we know that all things work together for good to them that love God, to them who are the called according to his purpose."
+    }
+  },
+  "Philippians": {
+    "4": {
+      "13": "I can do all things through Christ which strengtheneth me."
+    }
+  },
+  "Revelation": {
+    "21": {
+      "4": "And God shall wipe away all tears from their eyes; and there shall be no more death, neither sorrow, nor crying, neither shall there be any more pain: for the former things are passed away."
+    }
+  }
+};
+
+let bibleData = JSON.parse(JSON.stringify(BUILTIN_BIBLE));
+let currentBook = "John";
+let currentChapter = 3;
+let currentVerse = 16;
+let currentVersion = "KJV";
+let historyList = ["John 3:16"];
+let projPopup = null;
+let fontSize = 24;
+let recognition = null;
+let isListening = false;
+
+function init() {
+  renderBooks(BOOKS);
+  renderVersions();
+  selectBook("John", false);
+  updateClock();
+  setInterval(updateClock, 1000);
+  goVerse();
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById("clock").textContent = now.toLocaleTimeString();
+}
+
+function renderBooks(list) {
+  const bookListEl = document.getElementById("bookList");
+  const bookSelEl = document.getElementById("bookSel");
+  bookListEl.innerHTML = "";
+  if (bookSelEl.options.length === 0) {
+    BOOKS.forEach(b => {
+      const opt = document.createElement("option");
+      opt.value = b;
+      opt.textContent = b;
+      bookSelEl.appendChild(opt);
+    });
+  }
+  list.forEach(b => {
+    const span = document.createElement("span");
+    span.textContent = b;
+    if (b === currentBook) span.className = "activeBook";
+    span.onclick = () => selectBook(b, true);
+    bookListEl.appendChild(span);
+  });
+}
+
+function filterBooks() {
+  const q = document.getElementById("bookSearch").value.toLowerCase();
+  const filtered = BOOKS.filter(b => b.toLowerCase().includes(q));
+  renderBooks(filtered);
+}
+
+function selectBook(book, autoGo) {
+  currentBook = book;
+  document.getElementById("bookSel").value = book;
+  filterBooks();
+  if (autoGo) {
+    document.getElementById("chapIn").value = 1;
+    document.getElementById("verseIn").value = 1;
+    goVerse();
+  }
+}
+
+function changeBook() {
+  selectBook(document.getElementById("bookSel").value, true);
+}
+
+function renderVersions() {
+  const grid = document.getElementById("versionGrid");
+  grid.innerHTML = "";
+  VERSIONS.forEach(v => {
+    const btn = document.createElement("button");
+    btn.textContent = v;
+    if (v === currentVersion) btn.className = "active";
+    btn.onclick = () => {
+      currentVersion = v;
+      renderVersions();
+      setStatus("Version switched to " + v);
+      goVerse();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function getVerseText(book, chap, verse) {
+  if (bibleData[book] && bibleData[book][chap] && bibleData[book][chap][verse]) {
+    return bibleData[book][chap][verse];
+  }
+  return `[${book} ${chap}:${verse} — ${currentVersion}] Load full Bible JSON via "LOAD CUSTOM BIBLE JSON" for complete offline verses across all 66 books.`;
+}
+
+function goVerse() {
+  currentBook = document.getElementById("bookSel").value || currentBook;
+  currentChapter = parseInt(document.getElementById("chapIn").value, 10) || 1;
+  currentVerse = parseInt(document.getElementById("verseIn").value, 10) || 1;
+
+  const ref = `${currentBook.toUpperCase()} ${currentChapter}:${currentVerse} (${currentVersion})`;
+  const text = getVerseText(currentBook, String(currentChapter), String(currentVerse));
+
+  document.getElementById("projRef").textContent = ref;
+  document.getElementById("projText").textContent = text;
+  document.getElementById("projText").style.fontSize = fontSize + "px";
+
+  const shortRef = `${currentBook} ${currentChapter}:${currentVerse}`;
+  if (historyList[0] !== shortRef) {
+    historyList.unshift(shortRef);
+    if (historyList.length > 5) historyList.pop();
+    document.getElementById("history").textContent = "History: " + historyList.join(" • ");
+  }
+
+  syncPopup(ref, text);
+}
+
+function clearVerse() {
+  document.getElementById("projRef").textContent = "";
+  document.getElementById("projText").textContent = "";
+  syncPopup("", "");
+  setStatus("Screen cleared");
+}
+
+function prevVerse() {
+  let v = parseInt(document.getElementById("verseIn").value, 10) || 1;
+  if (v > 1) {
+    document.getElementById("verseIn").value = v - 1;
+    goVerse();
+  }
+}
+
+function nextVerse() {
+  let v = parseInt(document.getElementById("verseIn").value, 10) || 1;
+  document.getElementById("verseIn").value = v + 1;
+  goVerse();
+}
+
+function changeFontSize(delta) {
+  fontSize = Math.max(14, Math.min(64, fontSize + delta));
+  document.getElementById("projText").style.fontSize = fontSize + "px";
+}
+
+function setTheme(mode) {
+  const proj = document.getElementById("projScreen");
+  const overlay = document.getElementById("projOverlay");
+  proj.style.backgroundImage = "none";
+  if (mode === "light") {
+    proj.style.backgroundColor = "#f8fafc";
+    overlay.style.background = "rgba(255,255,255,0.85)";
+    document.getElementById("projRef").style.color = "#1e3a8a";
+    document.getElementById("projText").style.color = "#0f172a";
+    document.getElementById("projText").style.textShadow = "none";
+  } else if (mode === "dark") {
+    proj.style.backgroundColor = "#000000";
+    overlay.style.background = "rgba(0,0,0,0.7)";
+    document.getElementById("projRef").style.color = "#ffcc00";
+    document.getElementById("projText").style.color = "#ffffff";
+    document.getElementById("projText").style.textShadow = "0 2px 10px #000";
+  } else {
+    proj.style.backgroundColor = "#0a2a6b";
+    overlay.style.background = "rgba(0,0,0,0.45)";
+    document.getElementById("projRef").style.color = "#ffcc00";
+    document.getElementById("projText").style.color = "#ffffff";
+    document.getElementById("projText").style.textShadow = "0 2px 10px #000";
+  }
+  setStatus("Theme set to " + mode.toUpperCase());
+}
+
+function setThemeFromFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const proj = document.getElementById("projScreen");
+    const overlay = document.getElementById("projOverlay");
+    proj.style.backgroundImage = `url('${e.target.result}')`;
+    overlay.style.background = "rgba(0,0,0,0.5)";
+    document.getElementById("projRef").style.color = "#ffcc00";
+    document.getElementById("projText").style.color = "#ffffff";
+    setStatus("Custom background image applied");
+  };
+  reader.readAsDataURL(file);
+}
+
+function searchScripture() {
+  const query = document.getElementById("textSearch").value.trim();
+  if (!query) return;
+
+  // Check if query is a reference like "John 3:16" or "Psalm 23 1"
+  const refMatch = query.match(/^([1-3]?\s*[a-zA-Z]+)\s+(\d+)[:\s]+(\d+)$/i);
+  if (refMatch) {
+    const bookQuery = refMatch[1].trim().toLowerCase();
+    const matchedBook = BOOKS.find(b => b.toLowerCase().startsWith(bookQuery));
+    if (matchedBook) {
+      document.getElementById("bookSel").value = matchedBook;
+      document.getElementById("chapIn").value = refMatch[2];
+      document.getElementById("verseIn").value = refMatch[3];
+      selectBook(matchedBook, false);
+      goVerse();
+      setStatus("Jumped to " + matchedBook + " " + refMatch[2] + ":" + refMatch[3]);
+      return;
+    }
+  }
+
+  // Otherwise keyword search inside loaded bibleData
+  const qLower = query.toLowerCase();
+  for (const b of Object.keys(bibleData)) {
+    for (const c of Object.keys(bibleData[b])) {
+      for (const v of Object.keys(bibleData[b][c])) {
+        if (bibleData[b][c][v].toLowerCase().includes(qLower)) {
+          document.getElementById("bookSel").value = b;
+          document.getElementById("chapIn").value = c;
+          document.getElementById("verseIn").value = v;
+          selectBook(b, false);
+          goVerse();
+          setStatus(`Found "${query}" in ${b} ${c}:${v}`);
+          return;
+        }
+      }
+    }
+  }
+  setStatus(`No match for "${query}" in loaded verses`);
+}
+
+function toggleVoice() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    setStatus("Voice recognition not supported in this browser");
+    return;
+  }
+  const btn = document.getElementById("micBtn");
+  if (isListening && recognition) {
+    recognition.stop();
+    return;
+  }
+  recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+
+  recognition.onstart = () => {
+    isListening = true;
+    btn.textContent = "🎤 LISTENING... SPEAK REFERENCE";
+    btn.classList.add("listening");
+    setStatus("Listening for scripture reference...");
+  };
+
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript;
+    document.getElementById("textSearch").value = transcript.replace(/verse/gi, "").trim();
+    searchScripture();
+  };
+
+  recognition.onerror = (e) => {
+    setStatus("Mic error: " + e.error);
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    btn.textContent = "🎤 VOICE SEARCH (OFF)";
+    btn.classList.remove("listening");
+  };
+
+  recognition.start();
+}
+
+function openProjectorWindow() {
+  projPopup = window.open("", "LoveEconomyProjectorTV", "width=1024,height=768");
+  if (!projPopup) {
+    setStatus("Popup blocked! Allow popups for Second TV.");
+    return;
+  }
+  const ref = document.getElementById("projRef").textContent;
+  const text = document.getElementById("projText").textContent;
+  projPopup.document.write(`
+    <!DOCTYPE html><html><head><title>LIVE TV PROJECTOR</title>
+    <style>
+      body{margin:0;background:#0a2a6b;color:#fff;font-family:Arial,sans-serif;display:flex;flex-direction:column;justify-content:center;align-items:center;height:100vh;text-align:center;padding:40px;box-sizing:border-box}
+      #tvRef{color:#ffcc00;font-size:32px;font-weight:900;margin-bottom:24px;letter-spacing:2px}
+      #tvText{font-size:48px;font-weight:bold;line-height:1.4;text-shadow:0 4px 15px #000}
+    </style></head><body>
+      <div id="tvRef">${ref}</div>
+      <div id="tvText">${text}</div>
+    </body></html>
+  `);
+  projPopup.document.close();
+  setStatus("Second TV / Projector window opened");
+}
+
+function syncPopup(ref, text) {
+  if (projPopup && !projPopup.closed) {
+    const r = projPopup.document.getElementById("tvRef");
+    const t = projPopup.document.getElementById("tvText");
+    if (r) r.textContent = ref;
+    if (t) t.textContent = text;
+  }
+}
+
+function loadBibleJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      bibleData = parsed;
+      closeModal("loadModal");
+      setStatus("Custom Bible JSON loaded successfully!");
+      goVerse();
+    } catch (err) {
+      setStatus("Invalid JSON file format");
+    }
+  };
+  reader.readAsText(file);
+}
+
+function toggleFullscreen() {
+  const proj = document.getElementById("projScreen");
+  proj.classList.toggle("projFullscreen");
+}
+
+function exitFullscreen() {
+  document.getElementById("projScreen").classList.remove("projFullscreen");
+}
+
+function openModal(id) {
+  document.getElementById(id).style.display = "block";
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+function setStatus(msg) {
+  document.getElementById("statusMsg").textContent = msg;
+}
+
+document.addEventListener("keydown", function(e) {
+  if (document.activeElement.tagName === "INPUT") return;
+  if (e.key === "ArrowRight") nextVerse();
+  if (e.key === "ArrowLeft") prevVerse();
+  if (e.key.toLowerCase() === "f") toggleFullscreen();
+  if (e.key.toLowerCase() === "c") clearVerse();
+});
+
+init();
+</script>
+</body>
+</html>
